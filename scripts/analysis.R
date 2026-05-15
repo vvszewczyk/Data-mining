@@ -141,3 +141,33 @@ descriptive_stats_long <- data.frame(
 descriptive_stats_long
 
 write_csv(descriptive_stats_long, "output/tables/descriptive_stats_quant_vars.csv")
+
+
+# ============================================================
+# 11. Tabele liczności dla zmiennych jakościowych z hipotez
+# ============================================================
+
+freq_y <- bank %>% tabyl(y)
+freq_poutcome <- bank %>% tabyl(poutcome)
+freq_housing <- bank %>% tabyl(housing)
+freq_loan <- bank %>% tabyl(loan)
+freq_job <- bank %>% tabyl(job)
+freq_marital <- bank %>% tabyl(marital)
+freq_education <- bank %>% tabyl(education)
+
+freq_y
+freq_poutcome
+freq_housing
+freq_loan
+freq_job
+freq_marital
+freq_education
+
+write_csv(freq_y, "output/tables/freq_y.csv")
+write_csv(freq_poutcome, "output/tables/freq_poutcome.csv")
+write_csv(freq_housing, "output/tables/freq_housing.csv")
+write_csv(freq_loan, "output/tables/freq_loan.csv")
+write_csv(freq_job, "output/tables/freq_job.csv")
+write_csv(freq_marital, "output/tables/freq_marital.csv")
+write_csv(freq_education, "output/tables/freq_education.csv")
+
