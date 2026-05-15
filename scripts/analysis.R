@@ -171,3 +171,32 @@ write_csv(freq_job, "output/tables/freq_job.csv")
 write_csv(freq_marital, "output/tables/freq_marital.csv")
 write_csv(freq_education, "output/tables/freq_education.csv")
 
+# ============================================================
+# 12. Tabele wielodzielcze dla zmiennych jakościowych
+# ============================================================
+
+cross_y_poutcome <- bank %>%
+  tabyl(poutcome, y) %>%
+  adorn_totals("row") %>%
+  adorn_percentages("row") %>%
+  adorn_pct_formatting(digits = 2)
+
+cross_housing_marital <- bank %>%
+  tabyl(marital, housing) %>%
+  adorn_totals("row") %>%
+  adorn_percentages("row") %>%
+  adorn_pct_formatting(digits = 2)
+
+cross_loan_education <- bank %>%
+  tabyl(education, loan) %>%
+  adorn_totals("row") %>%
+  adorn_percentages("row") %>%
+  adorn_pct_formatting(digits = 2)
+
+cross_y_poutcome
+cross_housing_marital
+cross_loan_education
+
+write.csv(cross_y_poutcome, "output/tables/cross_y_poutcome.csv", row.names = FALSE)
+write.csv(cross_housing_marital, "output/tables/cross_housing_marital.csv", row.names = FALSE)
+write.csv(cross_loan_education, "output/tables/cross_loan_education.csv", row.names = FALSE)
