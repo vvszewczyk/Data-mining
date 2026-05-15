@@ -280,3 +280,84 @@ ggsave(
   width = 8,
   height = 5
 )
+
+# ============================================================
+# 14. Wykresy średnich w grupach
+# ============================================================
+
+mean_duration_y <- ggplot(bank, aes(x = y, y = duration)) +
+  stat_summary(fun = mean, geom = "bar") +
+  labs(
+    title = "Średni czas kontaktu względem decyzji o założeniu lokaty",
+    x = "Założenie lokaty",
+    y = "Średni czas kontaktu [sekundy]"
+  )
+
+mean_duration_y
+
+ggsave(
+  "output/figures/mean_duration_y.png",
+  plot = mean_duration_y,
+  width = 7,
+  height = 5
+)
+
+mean_campaign_y <- ggplot(bank, aes(x = y, y = campaign)) +
+  stat_summary(fun = mean, geom = "bar") +
+  labs(
+    title = "Średnia liczba kontaktów względem decyzji o założeniu lokaty",
+    x = "Założenie lokaty",
+    y = "Średnia liczba kontaktów"
+  )
+
+mean_campaign_y
+
+ggsave(
+  "output/figures/mean_campaign_y.png",
+  plot = mean_campaign_y,
+  width = 7,
+  height = 5
+)
+
+mean_age_housing <- ggplot(bank, aes(x = housing, y = age)) +
+  stat_summary(fun = mean, geom = "bar") +
+  labs(
+    title = "Średni wiek względem posiadania kredytu mieszkaniowego",
+    x = "Kredyt mieszkaniowy",
+    y = "Średni wiek"
+  )
+
+mean_age_housing
+
+ggsave(
+  "output/figures/mean_age_housing.png",
+  plot = mean_age_housing,
+  width = 7,
+  height = 5
+)
+
+mean_age_loan <- ggplot(bank, aes(x = loan, y = age)) +
+  stat_summary(fun = mean, geom = "bar") +
+  labs(
+    title = "Średni wiek względem posiadania pożyczki osobistej",
+    x = "Pożyczka osobista",
+    y = "Średni wiek"
+  )
+
+mean_age_loan
+
+ggsave(
+  "output/figures/mean_age_loan.png",
+  plot = mean_age_loan,
+  width = 7,
+  height = 5
+)
+
+mean_tables <- list(
+  duration_by_y = bank %>% group_by(y) %>% summarise(mean_duration = mean(duration)),
+  campaign_by_y = bank %>% group_by(y) %>% summarise(mean_campaign = mean(campaign)),
+  age_by_housing = bank %>% group_by(housing) %>% summarise(mean_age = mean(age)),
+  age_by_loan = bank %>% group_by(loan) %>% summarise(mean_age = mean(age))
+)
+
+mean_tables
