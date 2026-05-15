@@ -200,3 +200,83 @@ cross_loan_education
 write.csv(cross_y_poutcome, "output/tables/cross_y_poutcome.csv", row.names = FALSE)
 write.csv(cross_housing_marital, "output/tables/cross_housing_marital.csv", row.names = FALSE)
 write.csv(cross_loan_education, "output/tables/cross_loan_education.csv", row.names = FALSE)
+
+# ============================================================
+# 13. Histogramy skategoryzowane
+# ============================================================
+
+# Histogram czasu kontaktu względem decyzji o założeniu lokaty
+hist_duration_y <- ggplot(bank, aes(x = duration)) +
+  geom_histogram(bins = 40) +
+  facet_wrap(~ y) +
+  labs(
+    title = "Rozkład czasu kontaktu względem decyzji o założeniu lokaty",
+    x = "Czas ostatniego kontaktu [sekundy]",
+    y = "Liczba obserwacji"
+  )
+
+hist_duration_y
+
+ggsave(
+  "output/figures/hist_duration_y.png",
+  plot = hist_duration_y,
+  width = 8,
+  height = 5
+)
+
+# Histogram wieku względem posiadania kredytu mieszkaniowego
+hist_age_housing <- ggplot(bank, aes(x = age)) +
+  geom_histogram(bins = 30) +
+  facet_wrap(~ housing) +
+  labs(
+    title = "Rozkład wieku względem posiadania kredytu mieszkaniowego",
+    x = "Wiek",
+    y = "Liczba obserwacji"
+  )
+
+hist_age_housing
+
+ggsave(
+  "output/figures/hist_age_housing.png",
+  plot = hist_age_housing,
+  width = 8,
+  height = 5
+)
+
+# Histogram wieku względem posiadania pożyczki osobistej
+hist_age_loan <- ggplot(bank, aes(x = age)) +
+  geom_histogram(bins = 30) +
+  facet_wrap(~ loan) +
+  labs(
+    title = "Rozkład wieku względem posiadania pożyczki osobistej",
+    x = "Wiek",
+    y = "Liczba obserwacji"
+  )
+
+hist_age_loan
+
+ggsave(
+  "output/figures/hist_age_loan.png",
+  plot = hist_age_loan,
+  width = 8,
+  height = 5
+)
+
+# Histogram liczby kontaktów względem decyzji o założeniu lokaty
+hist_campaign_y <- ggplot(bank, aes(x = campaign)) +
+  geom_histogram(bins = 30) +
+  facet_wrap(~ y) +
+  labs(
+    title = "Rozkład liczby kontaktów względem decyzji o założeniu lokaty",
+    x = "Liczba kontaktów w kampanii",
+    y = "Liczba obserwacji"
+  )
+
+hist_campaign_y
+
+ggsave(
+  "output/figures/hist_campaign_y.png",
+  plot = hist_campaign_y,
+  width = 8,
+  height = 5
+)
