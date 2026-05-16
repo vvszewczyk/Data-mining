@@ -1,0 +1,7 @@
+ loan                                                                                                                                                                                             
+ 0.04 when job is admin. or blue-collar or entrepreneur or housemaid or management or retired or self-employed or services or technician & age >= 62                                              
+ 0.21 when job is                                                                                       student or unemployed or unknown                                                          
+ 0.46 when job is                            admin. or blue-collar or housemaid or management or self-employed or services or technician & age <  62 & education is primary or tertiary or unknown
+ 0.47 when job is                                                                                                housemaid or management & age <  62 & education is                      secondary
+ 0.57 when job is                            admin. or blue-collar or entrepreneur or retired or self-employed or services or technician & age <  62 & education is                      secondary
+ 0.59 when job is                                                                                                entrepreneur or retired & age <  62 & education is primary or tertiary or unknown

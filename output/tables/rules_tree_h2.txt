@@ -1,0 +1,5 @@
+ housing                                                                                
+    0.25 when job is              housemaid or retired or student or unknown            
+    0.42 when job is management or self-employed or technician or unemployed & age >= 47
+    0.54 when job is management or self-employed or technician or unemployed & age <  47
+    0.67 when job is       admin. or blue-collar or entrepreneur or services            

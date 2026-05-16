@@ -1,0 +1,7 @@
+    y                                                                      
+ 0.06 when duration <  522        & poutcome is failure or other or unknown
+ 0.31 when duration <  163        & poutcome is                     success
+ 0.34 when duration is 522 to 828 & poutcome is failure or other or unknown
+ 0.58 when duration >=        828                                          
+ 0.74 when duration is 163 to 522 & poutcome is                     success
+ 0.81 when duration is 522 to 828 & poutcome is                     success

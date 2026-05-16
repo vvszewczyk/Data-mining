@@ -946,3 +946,258 @@ ggsave(
   width = 8,
   height = 5
 )
+
+# ============================================================
+# III. Indukcja drzew decyzyjnych
+# ============================================================
+
+library(rpart)
+library(rpart.plot)
+
+# ------------------------------------------------------------
+# Drzewo dla hipotezy 1: y ~ duration + campaign + poutcome
+# ------------------------------------------------------------
+
+tree_h1 <- rpart(
+  y ~ duration + campaign + poutcome,
+  data = bank,
+  method = "class",
+  control = rpart.control(
+    cp = 0.01,
+    minsplit = 100,
+    minbucket = 50
+  )
+)
+
+tree_h1
+
+png(
+  filename = "output/figures/tree_h1_y.png",
+  width = 1200,
+  height = 800
+)
+
+rpart.plot(
+  tree_h1,
+  type = 3,
+  extra = 104,
+  fallen.leaves = TRUE,
+  main = "Drzewo decyzyjne dla zmiennej y"
+)
+
+dev.off()
+
+
+# ------------------------------------------------------------
+# Drzewo dla hipotezy 2: housing ~ age + job + marital
+# ------------------------------------------------------------
+
+tree_h2 <- rpart(
+  housing ~ age + job + marital,
+  data = bank,
+  method = "class",
+  control = rpart.control(
+    cp = 0.01,
+    minsplit = 100,
+    minbucket = 50
+  )
+)
+
+tree_h2
+
+png(
+  filename = "output/figures/tree_h2_housing.png",
+  width = 1300,
+  height = 800
+)
+
+rpart.plot(
+  tree_h2,
+  type = 3,
+  extra = 104,
+  fallen.leaves = TRUE,
+  main = "Drzewo decyzyjne dla zmiennej housing"
+)
+
+dev.off()
+
+
+# ------------------------------------------------------------
+# Drzewo dla hipotezy 3: loan ~ age + education + job
+# ------------------------------------------------------------
+
+tree_h3 <- rpart(
+  loan ~ age + education + job,
+  data = bank,
+  method = "class",
+  parms = list(prior = c("no" = 0.5, "yes" = 0.5)),
+  control = rpart.control(
+    cp = 0.001,
+    minsplit = 100,
+    minbucket = 50,
+    maxdepth = 4
+  )
+)
+
+tree_h3
+
+png(
+  filename = "output/figures/tree_h3_loan.png",
+  width = 1600,
+  height = 700
+)
+
+rpart.plot(
+  tree_h3,
+  type = 3,
+  extra = 104,
+  fallen.leaves = TRUE,
+  cex = 0.6,
+  tweak = 1.1,
+  main = "Drzewo decyzyjne dla zmiennej loan"
+)
+
+dev.off()
+
+# ============================================================
+# Ocena drzew: macierze klasyfikacji i błąd całkowity
+# ============================================================
+
+evaluate_tree <- function(model, data, target_var) {
+  predicted <- predict(model, data, type = "class")
+  actual <- data[[target_var]]
+  
+  confusion_matrix <- table(
+    Rzeczywiste = actual,
+    Przewidywane = predicted
+  )
+  
+  accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
+  error_rate <- 1 - accuracy
+  
+  list(
+    confusion_matrix = confusion_matrix,
+    accuracy = accuracy,
+    error_rate = error_rate
+  )
+}
+
+eval_h1 <- evaluate_tree(tree_h1, bank, "y")
+eval_h2 <- evaluate_tree(tree_h2, bank, "housing")
+eval_h3 <- evaluate_tree(tree_h3, bank, "loan")
+
+eval_h1
+eval_h2
+eval_h3
+
+# ============================================================
+# Ważność predyktorów w drzewach decyzyjnych
+# ============================================================
+
+importance_h1 <- data.frame(
+  predyktor = names(tree_h1$variable.importance),
+  waznosc = as.numeric(tree_h1$variable.importance),
+  hipoteza = "H1"
+)
+
+importance_h2 <- data.frame(
+  predyktor = names(tree_h2$variable.importance),
+  waznosc = as.numeric(tree_h2$variable.importance),
+  hipoteza = "H2"
+)
+
+importance_h3 <- data.frame(
+  predyktor = names(tree_h3$variable.importance),
+  waznosc = as.numeric(tree_h3$variable.importance),
+  hipoteza = "H3"
+)
+
+importance_all <- rbind(importance_h1, importance_h2, importance_h3)
+
+importance_h1
+importance_h2
+importance_h3
+
+write.csv(importance_all, "output/tables/tree_variable_importance.csv", row.names = FALSE)
+
+importance_plot_tree <- ggplot(
+  importance_all,
+  aes(x = reorder(paste(hipoteza, predyktor, sep = ": "), waznosc),
+      y = waznosc)
+) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    title = "Ważność predyktorów w drzewach decyzyjnych CART",
+    x = "Predyktor",
+    y = "Ważność"
+  )
+
+importance_plot_tree
+
+ggsave(
+  "output/figures/tree_variable_importance.png",
+  plot = importance_plot_tree,
+  width = 9,
+  height = 6
+)
+
+# ============================================================
+# Reguły decyzyjne z drzew
+# ============================================================
+
+rules_h1 <- rpart.rules(tree_h1)
+rules_h2 <- rpart.rules(tree_h2)
+rules_h3 <- rpart.rules(tree_h3)
+
+rules_h1
+rules_h2
+rules_h3
+
+capture.output(rules_h1, file = "output/tables/rules_tree_h1.txt")
+capture.output(rules_h2, file = "output/tables/rules_tree_h2.txt")
+capture.output(rules_h3, file = "output/tables/rules_tree_h3.txt")
+
+# ============================================================
+# Wykresy macierzy klasyfikacji
+# ============================================================
+
+plot_confusion_matrix <- function(eval_object, title, file_name) {
+  cm_df <- as.data.frame(eval_object$confusion_matrix)
+  
+  plot <- ggplot(cm_df, aes(x = Przewidywane, y = Rzeczywiste, fill = Freq)) +
+    geom_tile() +
+    geom_text(aes(label = Freq), size = 6) +
+    labs(
+      title = title,
+      x = "Klasa przewidywana",
+      y = "Klasa rzeczywista"
+    )
+  
+  ggsave(
+    file_name,
+    plot = plot,
+    width = 6,
+    height = 5
+  )
+  
+  plot
+}
+
+conf_plot_h1 <- plot_confusion_matrix(
+  eval_h1,
+  "Macierz klasyfikacji dla drzewa H1",
+  "output/figures/confusion_tree_h1.png"
+)
+
+conf_plot_h2 <- plot_confusion_matrix(
+  eval_h2,
+  "Macierz klasyfikacji dla drzewa H2",
+  "output/figures/confusion_tree_h2.png"
+)
+
+conf_plot_h3 <- plot_confusion_matrix(
+  eval_h3,
+  "Macierz klasyfikacji dla drzewa H3",
+  "output/figures/confusion_tree_h3.png"
+)
