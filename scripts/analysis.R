@@ -617,3 +617,332 @@ ggsave(
   width = 9,
   height = 6
 )
+
+# ============================================================
+# 18. Wykresy ramka-wąsy
+# ============================================================
+
+# Boxplot dla wieku
+box_age <- ggplot(bank, aes(y = age)) +
+  geom_boxplot() +
+  labs(
+    title = "Wykres ramka-wąsy dla wieku",
+    y = "Wiek"
+  )
+
+box_age
+
+ggsave(
+  "output/figures/box_age.png",
+  plot = box_age,
+  width = 6,
+  height = 5
+)
+
+# Boxplot dla czasu kontaktu
+box_duration <- ggplot(bank, aes(y = duration)) +
+  geom_boxplot() +
+  labs(
+    title = "Wykres ramka-wąsy dla czasu ostatniego kontaktu",
+    y = "Czas kontaktu [sekundy]"
+  )
+
+box_duration
+
+ggsave(
+  "output/figures/box_duration.png",
+  plot = box_duration,
+  width = 6,
+  height = 5
+)
+
+# Boxplot dla liczby kontaktów
+box_campaign <- ggplot(bank, aes(y = campaign)) +
+  geom_boxplot() +
+  labs(
+    title = "Wykres ramka-wąsy dla liczby kontaktów",
+    y = "Liczba kontaktów"
+  )
+
+box_campaign
+
+ggsave(
+  "output/figures/box_campaign.png",
+  plot = box_campaign,
+  width = 6,
+  height = 5
+)
+
+# Boxplot skategoryzowany: duration względem y
+box_duration_y <- ggplot(bank, aes(x = y, y = duration)) +
+  geom_boxplot() +
+  labs(
+    title = "Czas kontaktu względem decyzji o założeniu lokaty",
+    x = "Założenie lokaty",
+    y = "Czas kontaktu [sekundy]"
+  )
+
+box_duration_y
+
+ggsave(
+  "output/figures/box_duration_y.png",
+  plot = box_duration_y,
+  width = 7,
+  height = 5
+)
+
+# Boxplot skategoryzowany: age względem housing
+box_age_housing <- ggplot(bank, aes(x = housing, y = age)) +
+  geom_boxplot() +
+  labs(
+    title = "Wiek względem posiadania kredytu mieszkaniowego",
+    x = "Kredyt mieszkaniowy",
+    y = "Wiek"
+  )
+
+box_age_housing
+
+ggsave(
+  "output/figures/box_age_housing.png",
+  plot = box_age_housing,
+  width = 7,
+  height = 5
+)
+
+# Opcjonalnie: age względem loan
+box_age_loan <- ggplot(bank, aes(x = loan, y = age)) +
+  geom_boxplot() +
+  labs(
+    title = "Wiek względem posiadania pożyczki osobistej",
+    x = "Pożyczka osobista",
+    y = "Wiek"
+  )
+
+box_age_loan
+
+ggsave(
+  "output/figures/box_age_loan.png",
+  plot = box_age_loan,
+  width = 7,
+  height = 5
+)
+
+# ============================================================
+# 19. Test normalności i wartości odstające
+# ============================================================
+
+# Test Shapiro-Wilka działa w R maksymalnie dla 5000 obserwacji,
+# dlatego losujemy próbkę z każdej zmiennej.
+
+set.seed(123)
+
+shapiro_age <- shapiro.test(sample(bank$age, 5000))
+shapiro_duration <- shapiro.test(sample(bank$duration, 5000))
+shapiro_campaign <- shapiro.test(sample(bank$campaign, 5000))
+
+shapiro_age
+shapiro_duration
+shapiro_campaign
+
+# Tabela wyników testu normalności
+
+normality_results <- data.frame(
+  zmienna = c("age", "duration", "campaign"),
+  W = c(
+    as.numeric(shapiro_age$statistic),
+    as.numeric(shapiro_duration$statistic),
+    as.numeric(shapiro_campaign$statistic)
+  ),
+  p_value = c(
+    shapiro_age$p.value,
+    shapiro_duration$p.value,
+    shapiro_campaign$p.value
+  )
+)
+
+normality_results
+
+write.csv(
+  normality_results,
+  "output/tables/normality_results.csv",
+  row.names = FALSE
+)
+
+# Wykresy Q-Q
+
+png("output/figures/qq_age.png", width = 800, height = 600)
+qqnorm(bank$age, main = "Wykres Q-Q dla zmiennej age")
+qqline(bank$age)
+dev.off()
+
+png("output/figures/qq_duration.png", width = 800, height = 600)
+qqnorm(bank$duration, main = "Wykres Q-Q dla zmiennej duration")
+qqline(bank$duration)
+dev.off()
+
+png("output/figures/qq_campaign.png", width = 800, height = 600)
+qqnorm(bank$campaign, main = "Wykres Q-Q dla zmiennej campaign")
+qqline(bank$campaign)
+dev.off()
+
+# Funkcja do wykrywania wartości odstających metodą IQR
+
+detect_outliers <- function(x) {
+  q1 <- quantile(x, 0.25, na.rm = TRUE)
+  q3 <- quantile(x, 0.75, na.rm = TRUE)
+  iqr_value <- q3 - q1
+  
+  lower_bound <- q1 - 1.5 * iqr_value
+  upper_bound <- q3 + 1.5 * iqr_value
+  
+  x < lower_bound | x > upper_bound
+}
+
+# Oznaczenie wartości odstających
+
+bank <- bank %>%
+  mutate(
+    outlier_age = detect_outliers(age),
+    outlier_duration = detect_outliers(duration),
+    outlier_campaign = detect_outliers(campaign)
+  )
+
+# Tabela liczby wartości odstających
+
+outlier_results <- data.frame(
+  zmienna = c("age", "duration", "campaign"),
+  liczba_odstajacych = c(
+    sum(bank$outlier_age, na.rm = TRUE),
+    sum(bank$outlier_duration, na.rm = TRUE),
+    sum(bank$outlier_campaign, na.rm = TRUE)
+  ),
+  udzial_odstajacych = c(
+    mean(bank$outlier_age, na.rm = TRUE),
+    mean(bank$outlier_duration, na.rm = TRUE),
+    mean(bank$outlier_campaign, na.rm = TRUE)
+  )
+)
+
+outlier_results
+
+write.csv(
+  outlier_results,
+  "output/tables/outlier_results.csv",
+  row.names = FALSE
+)
+
+# ============================================================
+# 20. Wykresy rozrzutu dla par zmiennych skorelowanych
+# ============================================================
+
+# 1. pdays - previous
+scatter_pdays_previous <- ggplot(bank, aes(x = pdays, y = previous)) +
+  geom_point(alpha = 0.2) +
+  labs(
+    title = "Wykres rozrzutu: pdays i previous",
+    x = "Liczba dni od poprzedniego kontaktu",
+    y = "Liczba wcześniejszych kontaktów"
+  )
+
+scatter_pdays_previous
+
+ggsave(
+  "output/figures/scatter_pdays_previous.png",
+  plot = scatter_pdays_previous,
+  width = 7,
+  height = 5
+)
+
+# 2. day - campaign
+scatter_day_campaign <- ggplot(bank, aes(x = day, y = campaign)) +
+  geom_point(alpha = 0.2) +
+  labs(
+    title = "Wykres rozrzutu: day i campaign",
+    x = "Dzień miesiąca",
+    y = "Liczba kontaktów w kampanii"
+  )
+
+scatter_day_campaign
+
+ggsave(
+  "output/figures/scatter_day_campaign.png",
+  plot = scatter_day_campaign,
+  width = 7,
+  height = 5
+)
+
+# 3. duration - campaign
+scatter_duration_campaign <- ggplot(bank, aes(x = duration, y = campaign)) +
+  geom_point(alpha = 0.2) +
+  labs(
+    title = "Wykres rozrzutu: duration i campaign",
+    x = "Czas ostatniego kontaktu [sekundy]",
+    y = "Liczba kontaktów w kampanii"
+  )
+
+scatter_duration_campaign
+
+ggsave(
+  "output/figures/scatter_duration_campaign.png",
+  plot = scatter_duration_campaign,
+  width = 7,
+  height = 5
+)
+
+# ============================================================
+# 21. Wykresy rozrzutu skategoryzowane względem zmiennej y
+# ============================================================
+
+scatter_pdays_previous_y <- ggplot(bank, aes(x = pdays, y = previous)) +
+  geom_point(alpha = 0.2) +
+  facet_wrap(~ y) +
+  labs(
+    title = "Wykres rozrzutu: pdays i previous względem y",
+    x = "Liczba dni od poprzedniego kontaktu",
+    y = "Liczba wcześniejszych kontaktów"
+  )
+
+scatter_pdays_previous_y
+
+ggsave(
+  "output/figures/scatter_pdays_previous_y.png",
+  plot = scatter_pdays_previous_y,
+  width = 8,
+  height = 5
+)
+
+scatter_day_campaign_y <- ggplot(bank, aes(x = day, y = campaign)) +
+  geom_point(alpha = 0.2) +
+  facet_wrap(~ y) +
+  labs(
+    title = "Wykres rozrzutu: day i campaign względem y",
+    x = "Dzień miesiąca",
+    y = "Liczba kontaktów w kampanii"
+  )
+
+scatter_day_campaign_y
+
+ggsave(
+  "output/figures/scatter_day_campaign_y.png",
+  plot = scatter_day_campaign_y,
+  width = 8,
+  height = 5
+)
+
+scatter_duration_campaign_y <- ggplot(bank, aes(x = duration, y = campaign)) +
+  geom_point(alpha = 0.2) +
+  facet_wrap(~ y) +
+  labs(
+    title = "Wykres rozrzutu: duration i campaign względem y",
+    x = "Czas ostatniego kontaktu [sekundy]",
+    y = "Liczba kontaktów w kampanii"
+  )
+
+scatter_duration_campaign_y
+
+ggsave(
+  "output/figures/scatter_duration_campaign_y.png",
+  plot = scatter_duration_campaign_y,
+  width = 8,
+  height = 5
+)
