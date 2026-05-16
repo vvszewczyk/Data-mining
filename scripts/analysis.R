@@ -413,3 +413,207 @@ corrplot(
 )
 
 dev.off()
+
+# ============================================================
+# 16. Testy Chi-kwadrat dla zmiennych z hipotez
+# ============================================================
+
+# ----------------------------
+# Hipoteza 1: y ~ duration + campaign + poutcome
+# duration i campaign są ilościowe, więc trzeba je skategoryzować
+# poutcome jest jakościowe
+# ----------------------------
+
+bank <- bank %>%
+  mutate(
+    duration_group = cut(
+      duration,
+      breaks = quantile(duration, probs = seq(0, 1, 0.25), na.rm = TRUE),
+      include.lowest = TRUE,
+      labels = c("niski", "sredni_niski", "sredni_wysoki", "wysoki")
+    ),
+    campaign_group = cut(
+      campaign,
+      breaks = c(0, 1, 2, 3, Inf),
+      labels = c("1", "2", "3", "4+"),
+      include.lowest = TRUE
+    )
+  )
+
+chi_y_poutcome <- stats::chisq.test(table(bank$y, bank$poutcome))
+chi_y_duration <- stats::chisq.test(table(bank$y, bank$duration_group))
+chi_y_campaign <- stats::chisq.test(table(bank$y, bank$campaign_group))
+
+chi_y_poutcome
+chi_y_duration
+chi_y_campaign
+
+
+# ----------------------------
+# Hipoteza 2: housing ~ age + job + marital
+# age jest ilościowe, więc tworzymy grupy wieku
+# job i marital są jakościowe
+# ----------------------------
+
+bank <- bank %>%
+  mutate(
+    age_group = cut(
+      age,
+      breaks = c(17, 30, 45, 60, Inf),
+      labels = c("18-30", "31-45", "46-60", "60+"),
+      include.lowest = TRUE
+    )
+  )
+
+chi_housing_age <- stats::chisq.test(table(bank$housing, bank$age_group))
+chi_housing_job <- stats::chisq.test(table(bank$housing, bank$job))
+chi_housing_marital <- stats::chisq.test(table(bank$housing, bank$marital))
+
+chi_housing_age
+chi_housing_job
+chi_housing_marital
+
+
+# ----------------------------
+# Hipoteza 3: loan ~ age + education + job
+# age jest ilościowe, więc używamy age_group
+# education i job są jakościowe
+# ----------------------------
+
+chi_loan_age <- stats::chisq.test(table(bank$loan, bank$age_group))
+chi_loan_education <- stats::chisq.test(table(bank$loan, bank$education))
+chi_loan_job <- stats::chisq.test(table(bank$loan, bank$job))
+
+chi_loan_age
+chi_loan_education
+chi_loan_job
+
+chi_results <- data.frame(
+  hipoteza = c(
+    "H1", "H1", "H1",
+    "H2", "H2", "H2",
+    "H3", "H3", "H3"
+  ),
+  zmienna_zalezna = c(
+    "y", "y", "y",
+    "housing", "housing", "housing",
+    "loan", "loan", "loan"
+  ),
+  predyktor = c(
+    "poutcome", "duration_group", "campaign_group",
+    "age_group", "job", "marital",
+    "age_group", "education", "job"
+  ),
+  chi_square = c(
+    as.numeric(chi_y_poutcome$statistic),
+    as.numeric(chi_y_duration$statistic),
+    as.numeric(chi_y_campaign$statistic),
+    as.numeric(chi_housing_age$statistic),
+    as.numeric(chi_housing_job$statistic),
+    as.numeric(chi_housing_marital$statistic),
+    as.numeric(chi_loan_age$statistic),
+    as.numeric(chi_loan_education$statistic),
+    as.numeric(chi_loan_job$statistic)
+  ),
+  df = c(
+    as.numeric(chi_y_poutcome$parameter),
+    as.numeric(chi_y_duration$parameter),
+    as.numeric(chi_y_campaign$parameter),
+    as.numeric(chi_housing_age$parameter),
+    as.numeric(chi_housing_job$parameter),
+    as.numeric(chi_housing_marital$parameter),
+    as.numeric(chi_loan_age$parameter),
+    as.numeric(chi_loan_education$parameter),
+    as.numeric(chi_loan_job$parameter)
+  ),
+  p_value = c(
+    chi_y_poutcome$p.value,
+    chi_y_duration$p.value,
+    chi_y_campaign$p.value,
+    chi_housing_age$p.value,
+    chi_housing_job$p.value,
+    chi_housing_marital$p.value,
+    chi_loan_age$p.value,
+    chi_loan_education$p.value,
+    chi_loan_job$p.value
+  )
+)
+
+chi_results
+
+write.csv(
+  chi_results,
+  "output/tables/chi_square_results.csv",
+  row.names = FALSE
+)
+
+# ============================================================
+# 17. Diagram ważności zmiennych na podstawie testu Chi-kwadrat
+# ============================================================
+
+cramers_v <- function(x, y) {
+  tab <- table(x, y)
+  chi <- stats::chisq.test(tab)
+  n <- sum(tab)
+  k <- min(nrow(tab) - 1, ncol(tab) - 1)
+  sqrt(as.numeric(chi$statistic) / (n * k))
+}
+
+chi_importance <- data.frame(
+  hipoteza = c(
+    "H1", "H1", "H1",
+    "H2", "H2", "H2",
+    "H3", "H3", "H3"
+  ),
+  zmienna_zalezna = c(
+    "y", "y", "y",
+    "housing", "housing", "housing",
+    "loan", "loan", "loan"
+  ),
+  predyktor = c(
+    "poutcome", "duration_group", "campaign_group",
+    "age_group", "job", "marital",
+    "age_group", "education", "job"
+  ),
+  v_cramera = c(
+    cramers_v(bank$poutcome, bank$y),
+    cramers_v(bank$duration_group, bank$y),
+    cramers_v(bank$campaign_group, bank$y),
+    cramers_v(bank$age_group, bank$housing),
+    cramers_v(bank$job, bank$housing),
+    cramers_v(bank$marital, bank$housing),
+    cramers_v(bank$age_group, bank$loan),
+    cramers_v(bank$education, bank$loan),
+    cramers_v(bank$job, bank$loan)
+  )
+)
+
+chi_importance
+
+write.csv(
+  chi_importance,
+  "output/tables/chi_square_importance.csv",
+  row.names = FALSE
+)
+
+importance_plot <- ggplot(
+  chi_importance,
+  aes(x = reorder(paste(hipoteza, predyktor, sep = ": "), v_cramera),
+      y = v_cramera)
+) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    title = "Diagram ważności predyktorów na podstawie testu Chi-kwadrat",
+    x = "Predyktor",
+    y = "V Craméra"
+  )
+
+importance_plot
+
+ggsave(
+  "output/figures/chi_square_importance.png",
+  plot = importance_plot,
+  width = 9,
+  height = 6
+)

@@ -1,0 +1,10 @@
+"hipoteza","zmienna_zalezna","predyktor","v_cramera"
+"H1","y","poutcome",0.31166261679981
+"H1","y","duration_group",0.336970520792223
+"H1","y","campaign_group",0.0845537226052131
+"H2","housing","age_group",0.219467719884381
+"H2","housing","job",0.281739922087707
+"H2","housing","marital",0.0206852269604424
+"H3","loan","age_group",0.0683766839175584
+"H3","loan","education",0.0802788983453792
+"H3","loan","job",0.106501663881643
