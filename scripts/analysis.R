@@ -361,3 +361,55 @@ mean_tables <- list(
 )
 
 mean_tables
+
+# ============================================================
+# 15. Macierz korelacji dla zmiennych ilościowych
+# ============================================================
+
+numeric_vars <- bank %>%
+  select(where(is.numeric))
+
+cor_matrix <- cor(numeric_vars, use = "complete.obs")
+
+cor_matrix
+
+write.csv(
+  cor_matrix,
+  "output/tables/correlation_matrix.csv"
+)
+
+png(
+  filename = "output/figures/correlation_matrix.png",
+  width = 1000,
+  height = 800
+)
+
+corrplot(
+  cor_matrix,
+  method = "number",
+  type = "upper",
+  tl.cex = 0.9,
+  number.cex = 0.8
+)
+
+dev.off()
+
+cor_matrix
+
+png(
+  filename = "output/figures/correlation_matrix_readable.png",
+  width = 1000,
+  height = 800
+)
+
+corrplot(
+  cor_matrix,
+  method = "number",
+  type = "upper",
+  col = "black",
+  number.cex = 0.9,
+  tl.cex = 1,
+  diag = FALSE
+)
+
+dev.off()
