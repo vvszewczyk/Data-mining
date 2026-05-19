@@ -205,7 +205,7 @@ write.csv(cross_loan_education, "output/tables/cross_loan_education.csv", row.na
 # 13. Histogramy skategoryzowane
 # ============================================================
 
-# Histogram czasu kontaktu względem decyzji o założeniu lokaty
+# Histogram czasu kontaktu względem decyzji o założeniu lokaty.
 hist_duration_y <- ggplot(bank, aes(x = duration)) +
   geom_histogram(bins = 40) +
   facet_wrap(~ y) +
@@ -224,7 +224,7 @@ ggsave(
   height = 5
 )
 
-# Histogram wieku względem posiadania kredytu mieszkaniowego
+# Histogram wieku względem posiadania kredytu mieszkaniowego.
 hist_age_housing <- ggplot(bank, aes(x = age)) +
   geom_histogram(bins = 30) +
   facet_wrap(~ housing) +
@@ -243,7 +243,7 @@ ggsave(
   height = 5
 )
 
-# Histogram wieku względem posiadania pożyczki osobistej
+# Histogram wieku względem posiadania pożyczki osobistej.
 hist_age_loan <- ggplot(bank, aes(x = age)) +
   geom_histogram(bins = 30) +
   facet_wrap(~ loan) +
@@ -262,7 +262,7 @@ ggsave(
   height = 5
 )
 
-# Histogram liczby kontaktów względem decyzji o założeniu lokaty
+# Histogram liczby kontaktów względem decyzji o założeniu lokaty.
 hist_campaign_y <- ggplot(bank, aes(x = campaign)) +
   geom_histogram(bins = 30) +
   facet_wrap(~ y) +
@@ -418,11 +418,8 @@ dev.off()
 # 16. Testy Chi-kwadrat dla zmiennych z hipotez
 # ============================================================
 
-# ----------------------------
-# Hipoteza 1: y ~ duration + campaign + poutcome
-# duration i campaign są ilościowe, więc trzeba je skategoryzować
-# poutcome jest jakościowe
-# ----------------------------
+# Hipoteza 1: y ~ duration + campaign + poutcome.
+# Zmienne duration i campaign są ilościowe, więc tworzymy dla nich grupy.
 
 bank <- bank %>%
   mutate(
@@ -449,11 +446,8 @@ chi_y_duration
 chi_y_campaign
 
 
-# ----------------------------
-# Hipoteza 2: housing ~ age + job + marital
-# age jest ilościowe, więc tworzymy grupy wieku
-# job i marital są jakościowe
-# ----------------------------
+# Hipoteza 2: housing ~ age + job + marital.
+# Zmienna age jest ilościowa, więc tworzymy grupy wieku.
 
 bank <- bank %>%
   mutate(
@@ -474,11 +468,8 @@ chi_housing_job
 chi_housing_marital
 
 
-# ----------------------------
-# Hipoteza 3: loan ~ age + education + job
-# age jest ilościowe, więc używamy age_group
-# education i job są jakościowe
-# ----------------------------
+# Hipoteza 3: loan ~ age + education + job.
+# Dla zmiennej age wykorzystujemy wcześniej utworzone grupy wieku.
 
 chi_loan_age <- stats::chisq.test(table(bank$loan, bank$age_group))
 chi_loan_education <- stats::chisq.test(table(bank$loan, bank$education))
@@ -622,7 +613,7 @@ ggsave(
 # 18. Wykresy ramka-wąsy
 # ============================================================
 
-# Boxplot dla wieku
+# Wykres ramka-wąsy dla wieku.
 box_age <- ggplot(bank, aes(y = age)) +
   geom_boxplot() +
   labs(
@@ -639,7 +630,7 @@ ggsave(
   height = 5
 )
 
-# Boxplot dla czasu kontaktu
+# Wykres ramka-wąsy dla czasu kontaktu.
 box_duration <- ggplot(bank, aes(y = duration)) +
   geom_boxplot() +
   labs(
@@ -656,7 +647,7 @@ ggsave(
   height = 5
 )
 
-# Boxplot dla liczby kontaktów
+# Wykres ramka-wąsy dla liczby kontaktów.
 box_campaign <- ggplot(bank, aes(y = campaign)) +
   geom_boxplot() +
   labs(
@@ -673,7 +664,7 @@ ggsave(
   height = 5
 )
 
-# Boxplot skategoryzowany: duration względem y
+# Wykres ramka-wąsy: duration względem y.
 box_duration_y <- ggplot(bank, aes(x = y, y = duration)) +
   geom_boxplot() +
   labs(
@@ -691,7 +682,7 @@ ggsave(
   height = 5
 )
 
-# Boxplot skategoryzowany: age względem housing
+# Wykres ramka-wąsy: age względem housing.
 box_age_housing <- ggplot(bank, aes(x = housing, y = age)) +
   geom_boxplot() +
   labs(
@@ -709,7 +700,7 @@ ggsave(
   height = 5
 )
 
-# Opcjonalnie: age względem loan
+# Wykres ramka-wąsy: age względem loan.
 box_age_loan <- ggplot(bank, aes(x = loan, y = age)) +
   geom_boxplot() +
   labs(
@@ -744,7 +735,7 @@ shapiro_age
 shapiro_duration
 shapiro_campaign
 
-# Tabela wyników testu normalności
+# Tabela wyników testu normalności.
 
 normality_results <- data.frame(
   zmienna = c("age", "duration", "campaign"),
@@ -768,7 +759,7 @@ write.csv(
   row.names = FALSE
 )
 
-# Wykresy Q-Q
+# Wykresy Q-Q dla zmiennych ilościowych.
 
 png("output/figures/qq_age.png", width = 800, height = 600)
 qqnorm(bank$age, main = "Wykres Q-Q dla zmiennej age")
@@ -785,20 +776,20 @@ qqnorm(bank$campaign, main = "Wykres Q-Q dla zmiennej campaign")
 qqline(bank$campaign)
 dev.off()
 
-# Funkcja do wykrywania wartości odstających metodą IQR
+# Funkcja do wykrywania wartości odstających metodą IQR.
 
 detect_outliers <- function(x) {
   q1 <- quantile(x, 0.25, na.rm = TRUE)
   q3 <- quantile(x, 0.75, na.rm = TRUE)
   iqr_value <- q3 - q1
-  
+
   lower_bound <- q1 - 1.5 * iqr_value
   upper_bound <- q3 + 1.5 * iqr_value
-  
+
   x < lower_bound | x > upper_bound
 }
 
-# Oznaczenie wartości odstających
+# Oznaczenie wartości odstających.
 
 bank <- bank %>%
   mutate(
@@ -807,7 +798,7 @@ bank <- bank %>%
     outlier_campaign = detect_outliers(campaign)
   )
 
-# Tabela liczby wartości odstających
+# Tabela liczby wartości odstających.
 
 outlier_results <- data.frame(
   zmienna = c("age", "duration", "campaign"),
@@ -835,7 +826,7 @@ write.csv(
 # 20. Wykresy rozrzutu dla par zmiennych skorelowanych
 # ============================================================
 
-# 1. pdays - previous
+# Wykres rozrzutu: pdays i previous.
 scatter_pdays_previous <- ggplot(bank, aes(x = pdays, y = previous)) +
   geom_point(alpha = 0.2) +
   labs(
@@ -853,7 +844,7 @@ ggsave(
   height = 5
 )
 
-# 2. day - campaign
+# Wykres rozrzutu: day i campaign.
 scatter_day_campaign <- ggplot(bank, aes(x = day, y = campaign)) +
   geom_point(alpha = 0.2) +
   labs(
@@ -871,7 +862,7 @@ ggsave(
   height = 5
 )
 
-# 3. duration - campaign
+# Wykres rozrzutu: duration i campaign.
 scatter_duration_campaign <- ggplot(bank, aes(x = duration, y = campaign)) +
   geom_point(alpha = 0.2) +
   labs(
@@ -948,15 +939,13 @@ ggsave(
 )
 
 # ============================================================
-# III. Indukcja drzew decyzyjnych
+# 22. Indukcja drzew decyzyjnych
 # ============================================================
 
 library(rpart)
 library(rpart.plot)
 
-# ------------------------------------------------------------
-# Drzewo dla hipotezy 1: y ~ duration + campaign + poutcome
-# ------------------------------------------------------------
+# Drzewo dla hipotezy 1: y ~ duration + campaign + poutcome.
 
 tree_h1 <- rpart(
   y ~ duration + campaign + poutcome,
@@ -988,9 +977,7 @@ rpart.plot(
 dev.off()
 
 
-# ------------------------------------------------------------
-# Drzewo dla hipotezy 2: housing ~ age + job + marital
-# ------------------------------------------------------------
+# Drzewo dla hipotezy 2: housing ~ age + job + marital.
 
 tree_h2 <- rpart(
   housing ~ age + job + marital,
@@ -1022,9 +1009,7 @@ rpart.plot(
 dev.off()
 
 
-# ------------------------------------------------------------
-# Drzewo dla hipotezy 3: loan ~ age + education + job
-# ------------------------------------------------------------
+# Drzewo dla hipotezy 3: loan ~ age + education + job.
 
 tree_h3 <- rpart(
   loan ~ age + education + job,
@@ -1060,21 +1045,21 @@ rpart.plot(
 dev.off()
 
 # ============================================================
-# Ocena drzew: macierze klasyfikacji i błąd całkowity
+# 23. Ocena drzew decyzyjnych
 # ============================================================
 
 evaluate_tree <- function(model, data, target_var) {
   predicted <- predict(model, data, type = "class")
   actual <- data[[target_var]]
-  
+
   confusion_matrix <- table(
     Rzeczywiste = actual,
     Przewidywane = predicted
   )
-  
+
   accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
   error_rate <- 1 - accuracy
-  
+
   list(
     confusion_matrix = confusion_matrix,
     accuracy = accuracy,
@@ -1091,7 +1076,7 @@ eval_h2
 eval_h3
 
 # ============================================================
-# Ważność predyktorów w drzewach decyzyjnych
+# 24. Ważność predyktorów w drzewach decyzyjnych
 # ============================================================
 
 importance_h1 <- data.frame(
@@ -1143,7 +1128,7 @@ ggsave(
 )
 
 # ============================================================
-# Reguły decyzyjne z drzew
+# 25. Reguły decyzyjne z drzew
 # ============================================================
 
 rules_h1 <- rpart.rules(tree_h1)
@@ -1159,12 +1144,12 @@ capture.output(rules_h2, file = "output/tables/rules_tree_h2.txt")
 capture.output(rules_h3, file = "output/tables/rules_tree_h3.txt")
 
 # ============================================================
-# Wykresy macierzy klasyfikacji
+# 26. Wykresy macierzy klasyfikacji
 # ============================================================
 
 plot_confusion_matrix <- function(eval_object, title, file_name) {
   cm_df <- as.data.frame(eval_object$confusion_matrix)
-  
+
   plot <- ggplot(cm_df, aes(x = Przewidywane, y = Rzeczywiste, fill = Freq)) +
     geom_tile() +
     geom_text(aes(label = Freq), size = 6) +
@@ -1173,14 +1158,14 @@ plot_confusion_matrix <- function(eval_object, title, file_name) {
       x = "Klasa przewidywana",
       y = "Klasa rzeczywista"
     )
-  
+
   ggsave(
     file_name,
     plot = plot,
     width = 6,
     height = 5
   )
-  
+
   plot
 }
 
@@ -1201,3 +1186,387 @@ conf_plot_h3 <- plot_confusion_matrix(
   "Macierz klasyfikacji dla drzewa H3",
   "output/figures/confusion_tree_h3.png"
 )
+
+# ============================================================
+# 27. Analiza skupień
+# ============================================================
+
+# Wybór zmiennych do analizy skupień.
+
+cluster_data <- bank %>%
+  select(age, balance, duration, campaign, previous)
+
+# Standaryzacja zmiennych.
+cluster_data_scaled <- scale(cluster_data)
+
+summary(cluster_data)
+
+# ============================================================
+# 28. Dobór liczby skupień metodą łokcia
+# ============================================================
+
+set.seed(123)
+
+wss <- data.frame(
+  k = 1:10,
+  total_withinss = NA
+)
+
+for (i in 1:10) {
+  model <- kmeans(
+    cluster_data_scaled,
+    centers = i,
+    nstart = 25
+  )
+
+  wss$total_withinss[i] <- model$tot.withinss
+}
+
+wss
+
+write.csv(
+  wss,
+  "output/tables/kmeans_elbow_wss.csv",
+  row.names = FALSE
+)
+
+elbow_plot <- ggplot(wss, aes(x = k, y = total_withinss)) +
+  geom_line() +
+  geom_point() +
+  scale_x_continuous(breaks = 1:10) +
+  labs(
+    title = "Dobór liczby skupień metodą łokcia",
+    x = "Liczba skupień k",
+    y = "Suma kwadratów wewnątrz skupień"
+  )
+
+elbow_plot
+
+ggsave(
+  "output/figures/kmeans_elbow_plot.png",
+  plot = elbow_plot,
+  width = 8,
+  height = 5
+)
+
+# ============================================================
+# 29. Analiza skupień metodą k-średnich dla k = 6
+# ============================================================
+
+set.seed(123)
+
+kmeans_6 <- kmeans(
+  cluster_data_scaled,
+  centers = 6,
+  nstart = 25
+)
+
+kmeans_6
+
+bank$cluster_kmeans <- as.factor(kmeans_6$cluster)
+
+kmeans_cluster_counts <- bank %>%
+  tabyl(cluster_kmeans)
+
+kmeans_cluster_counts
+
+write.csv(
+  kmeans_cluster_counts,
+  "output/tables/kmeans_cluster_counts.csv",
+  row.names = FALSE
+)
+
+kmeans_numeric_profile <- bank %>%
+  group_by(cluster_kmeans) %>%
+  summarise(
+    n = n(),
+    mean_age = mean(age),
+    mean_balance = mean(balance),
+    mean_duration = mean(duration),
+    mean_campaign = mean(campaign),
+    mean_previous = mean(previous)
+  )
+
+kmeans_numeric_profile
+
+write.csv(
+  kmeans_numeric_profile,
+  "output/tables/kmeans_numeric_profile.csv",
+  row.names = FALSE
+)
+
+# Rozkład zmiennych zależnych w skupieniach k-średnich.
+
+cluster_y <- bank %>%
+  tabyl(cluster_kmeans, y) %>%
+  adorn_percentages("row") %>%
+  adorn_pct_formatting(digits = 2)
+
+cluster_housing <- bank %>%
+  tabyl(cluster_kmeans, housing) %>%
+  adorn_percentages("row") %>%
+  adorn_pct_formatting(digits = 2)
+
+cluster_loan <- bank %>%
+  tabyl(cluster_kmeans, loan) %>%
+  adorn_percentages("row") %>%
+  adorn_pct_formatting(digits = 2)
+
+cluster_y
+cluster_housing
+cluster_loan
+
+write.csv(cluster_y, "output/tables/cluster_y.csv", row.names = FALSE)
+write.csv(cluster_housing, "output/tables/cluster_housing.csv", row.names = FALSE)
+write.csv(cluster_loan, "output/tables/cluster_loan.csv", row.names = FALSE)
+
+# Wykresy udziału klasy yes w skupieniach k-średnich.
+
+cluster_yes_rates <- bank %>%
+  group_by(cluster_kmeans) %>%
+  summarise(
+    y_yes = mean(y == "yes"),
+    housing_yes = mean(housing == "yes"),
+    loan_yes = mean(loan == "yes")
+  )
+
+cluster_yes_rates
+
+write.csv(
+  cluster_yes_rates,
+  "output/tables/cluster_yes_rates.csv",
+  row.names = FALSE
+)
+
+plot_cluster_y <- ggplot(cluster_yes_rates, aes(x = cluster_kmeans, y = y_yes)) +
+  geom_col() +
+  labs(
+    title = "Udział klientów z lokatą w skupieniach",
+    x = "Skupienie",
+    y = "Udział y = yes"
+  )
+
+plot_cluster_housing <- ggplot(cluster_yes_rates, aes(x = cluster_kmeans, y = housing_yes)) +
+  geom_col() +
+  labs(
+    title = "Udział klientów z kredytem mieszkaniowym w skupieniach",
+    x = "Skupienie",
+    y = "Udział housing = yes"
+  )
+
+plot_cluster_loan <- ggplot(cluster_yes_rates, aes(x = cluster_kmeans, y = loan_yes)) +
+  geom_col() +
+  labs(
+    title = "Udział klientów z pożyczką osobistą w skupieniach",
+    x = "Skupienie",
+    y = "Udział loan = yes"
+  )
+
+plot_cluster_y
+plot_cluster_housing
+plot_cluster_loan
+
+ggsave("output/figures/cluster_y_yes.png", plot = plot_cluster_y, width = 7, height = 5)
+ggsave("output/figures/cluster_housing_yes.png", plot = plot_cluster_housing, width = 7, height = 5)
+ggsave("output/figures/cluster_loan_yes.png", plot = plot_cluster_loan, width = 7, height = 5)
+
+# ============================================================
+# 30. Sprawdzian krzyżowy dla metody k-średnich
+# ============================================================
+
+set.seed(123)
+
+k_values <- 2:10
+folds <- sample(rep(1:10, length.out = nrow(cluster_data_scaled)))
+
+cv_results <- data.frame()
+
+for (k in k_values) {
+  fold_wss <- c()
+
+  for (fold in 1:10) {
+    train_data <- cluster_data_scaled[folds != fold, ]
+    test_data <- cluster_data_scaled[folds == fold, ]
+
+    model <- kmeans(
+      train_data,
+      centers = k,
+      nstart = 25
+    )
+
+    centers <- model$centers
+
+    distances <- as.matrix(dist(rbind(test_data, centers)))
+    distances <- distances[
+      1:nrow(test_data),
+      (nrow(test_data) + 1):(nrow(test_data) + k)
+    ]
+
+    assigned_cluster <- apply(distances, 1, which.min)
+
+    test_wss <- sum(
+      sapply(
+        1:nrow(test_data),
+        function(i) sum((test_data[i, ] - centers[assigned_cluster[i], ])^2)
+      )
+    )
+
+    fold_wss <- c(fold_wss, test_wss)
+  }
+
+  cv_results <- rbind(
+    cv_results,
+    data.frame(
+      k = k,
+      mean_test_wss = mean(fold_wss),
+      sd_test_wss = sd(fold_wss)
+    )
+  )
+}
+
+cv_results
+
+write.csv(
+  cv_results,
+  "output/tables/kmeans_cv_results.csv",
+  row.names = FALSE
+)
+
+cv_plot <- ggplot(cv_results, aes(x = k, y = mean_test_wss)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "10-krotny sprawdzian krzyżowy dla metody k-średnich",
+    x = "Liczba skupień",
+    y = "Średnia suma kwadratów na zbiorach testowych"
+  )
+
+cv_plot
+
+ggsave(
+  "output/figures/kmeans_cv_plot.png",
+  plot = cv_plot,
+  width = 7,
+  height = 5
+)
+
+# ============================================================
+# 31. Analiza skupień metodą EM
+# ============================================================
+
+library(mclust)
+
+set.seed(123)
+
+em_model <- Mclust(cluster_data_scaled)
+
+summary(em_model)
+
+# Dodanie numeru skupienia EM do danych.
+bank$cluster_em <- as.factor(em_model$classification)
+
+# Liczebność skupień EM.
+em_cluster_counts <- bank %>%
+  tabyl(cluster_em)
+
+em_cluster_counts
+
+write.csv(
+  em_cluster_counts,
+  "output/tables/em_cluster_counts.csv",
+  row.names = FALSE
+)
+
+# Profil ilościowy skupień EM.
+em_numeric_profile <- bank %>%
+  group_by(cluster_em) %>%
+  summarise(
+    n = n(),
+    mean_age = mean(age),
+    mean_balance = mean(balance),
+    mean_duration = mean(duration),
+    mean_campaign = mean(campaign),
+    mean_previous = mean(previous)
+  )
+
+print(em_numeric_profile, width = Inf)
+
+write.csv(
+  em_numeric_profile,
+  "output/tables/em_numeric_profile.csv",
+  row.names = FALSE
+)
+
+# ============================================================
+# 32. Powiązanie skupień EM ze zmiennymi zależnymi
+# ============================================================
+
+em_y <- bank %>%
+  tabyl(cluster_em, y) %>%
+  adorn_percentages("row") %>%
+  adorn_pct_formatting(digits = 2)
+
+em_housing <- bank %>%
+  tabyl(cluster_em, housing) %>%
+  adorn_percentages("row") %>%
+  adorn_pct_formatting(digits = 2)
+
+em_loan <- bank %>%
+  tabyl(cluster_em, loan) %>%
+  adorn_percentages("row") %>%
+  adorn_pct_formatting(digits = 2)
+
+em_yes_rates <- bank %>%
+  group_by(cluster_em) %>%
+  summarise(
+    y_yes = mean(y == "yes"),
+    housing_yes = mean(housing == "yes"),
+    loan_yes = mean(loan == "yes")
+  )
+
+em_y
+em_housing
+em_loan
+em_yes_rates
+
+write.csv(em_y, "output/tables/em_y.csv", row.names = FALSE)
+write.csv(em_housing, "output/tables/em_housing.csv", row.names = FALSE)
+write.csv(em_loan, "output/tables/em_loan.csv", row.names = FALSE)
+write.csv(em_yes_rates, "output/tables/em_yes_rates.csv", row.names = FALSE)
+
+
+# ============================================================
+# 33. Wykresy udziału wartości yes w skupieniach EM
+# ============================================================
+
+em_y_plot <- ggplot(em_yes_rates, aes(x = cluster_em, y = y_yes)) +
+  geom_col() +
+  labs(
+    title = "Udział y = yes w skupieniach EM",
+    x = "Skupienie EM",
+    y = "Udział y = yes"
+  )
+
+em_housing_plot <- ggplot(em_yes_rates, aes(x = cluster_em, y = housing_yes)) +
+  geom_col() +
+  labs(
+    title = "Udział housing = yes w skupieniach EM",
+    x = "Skupienie EM",
+    y = "Udział housing = yes"
+  )
+
+em_loan_plot <- ggplot(em_yes_rates, aes(x = cluster_em, y = loan_yes)) +
+  geom_col() +
+  labs(
+    title = "Udział loan = yes w skupieniach EM",
+    x = "Skupienie EM",
+    y = "Udział loan = yes"
+  )
+
+em_y_plot
+em_housing_plot
+em_loan_plot
+
+ggsave("output/figures/em_y_yes.png", plot = em_y_plot, width = 7, height = 5)
+ggsave("output/figures/em_housing_yes.png", plot = em_housing_plot, width = 7, height = 5)
+ggsave("output/figures/em_loan_yes.png", plot = em_loan_plot, width = 7, height = 5)
